@@ -1,0 +1,126 @@
+#include<math.h>
+#include"iostream"
+using namespace std;
+#include <stack>
+class calculator //计算类，用于执行计算功能，饱含 构造函数和一个公有的 evaluate函数以及一个私有的 operate函数 
+{
+private:
+   stack<char> optr;   //定义了一个char类型的栈，存放操作符
+   stack<double> opnd; // 定义了一个char类型的栈，存放操作数
+   double value;       //value用于存放计算结果 
+public: 
+   calculator()        //构造函数  初始时将#压如栈底 
+ {   
+     optr.push('#'); 
+ };
+
+  void evaluate();  //(程序核心) 计算函数
+
+private:
+  int lp(char op);       
+  int rp(char op);      //将不同操作符转换为不同的数字的函数，以返回的结果来比较运算符优先级   
+  double operate(char theta, double a, double b);  //用于被 evaluate函数调用，计算出最后结果
+};
+
+void calculator::evaluate()
+{ 
+	char ch, op, theta;
+	double val, a, b,result;
+	cin>>ch;       //输入一个字符
+	op ='#';       //给op赋初值#
+while((ch != '#') || (op != '#'))  //当输入的不为#时
+  {
+	if( isdigit(ch))   //判断，如果是数字则将其返回到输入流，压入操作数栈中，继续输入 循环
+	{
+	  cin.putback(ch);
+	  cin>>val; 
+	  opnd.push(val);
+      cin>>ch;
+	}
+    else if(rp(ch)==999)   cin>>ch;     //过滤掉非法输入
+
+    else if(lp(op)<rp(ch))  //如果不是数字，则和操作符栈中的顶层元素比较优先级，如果大于，则压入操作符栈中，继续输入
+	{ optr.push (ch); 
+	  cin>>ch;
+	}
+	else if(lp(op)==rp(ch)&&rp(ch)!=6) //如果不是数字，且优先级和操作符栈中的顶层元素相等，则操作符栈中的最顶层元素退栈
+	{ optr.pop(); 
+      cin>>ch;
+	}
+	else if(lp(op)>rp(ch)&&lp(op)==6)
+	{  cout<<"输入有误"<<endl;  return;}
+	else if(lp(op)>rp(ch)&&lp(op)!=6)                    //如果不是数字,且优先级小于操作符栈中的顶层元素
+	{   
+	  
+	   theta=optr.top();    // 取出并弹出操作符栈的顶层元素，存到 theta中
+	   optr.pop(); 
+	   if(opnd.empty())  {cout<<"输入有误"<<endl;return;}
+	   else   
+	   {
+		   b=opnd.top();        // 取出并弹出操作数栈的顶层元素，存到b中
+	       opnd.pop(); 
+		   if(opnd.empty())  {cout<<"输入有误"<<endl;return;}
+	        else 
+			   {a=opnd.top();        // 取出并弹出操作数栈的顶层元素，存到a中
+	             opnd.pop();
+				 opnd.push(operate(theta, a, b)); //执行计算，并将结果压入操作数栈中
+			   } 
+	   } 
+	} 
+	   op=optr.top();      //将op的值修改为操作符栈的顶层元素                 
+	 
+}
+   result=opnd.top();
+   opnd.pop();
+  
+   if(opnd.empty()) cout<<result<<endl;
+   else 
+   {  while(!opnd.empty())
+      opnd.pop();
+	    cout<<"输入有误8"<<endl; op=optr.top();   return; 
+   }
+}
+
+int  calculator::lp(char op)
+{  switch(op)
+  { case '+': return 3;
+    case '-': return 3;
+    case '*': return 5;
+    case '/': return 5;
+    case '(': return 1;
+    case ')': return 6;
+    case '#': return 0;
+	default: return 999;//表示op输入的既不是符号也不是数字
+  }
+}
+
+int  calculator::rp(char op)
+{  switch(op)
+  { case '+': return 2;
+    case '-': return 2;
+    case '*': return 5;
+    case '/': return 5;
+    case 40: return 6;
+    case 41: return 1;
+    case '#': return 0;
+	default: return 999;//表示op输入的既不是符号也不是数字
+  }
+}
+
+double calculator::operate(char theta,double a,double b)
+{   switch(theta)
+   {case '+': return a+b;
+    case '-':return a-b;
+    case '*':return a*b;
+    case '/':return a/b;
+   }
+}
+
+int main()
+{  
+  calculator one;  //实例化一个calculator类
+  
+  while(1)
+  one.evaluate();  //执行计算功能
+  return 0;
+}
